@@ -22,82 +22,119 @@ namespace Recepten.Wpf
     /// </summary>
     public partial class MainWindow : Window
     {
-        ReadFileService readFileService = new ReadFileService();
+        const int IndexFolder = 0;
+        const int IndexFileName = 1;
+
+        const string bestandenMap = @"../../Assets/";
+
+        ReadFileService readService = new ReadFileService();
+
+        string[] huidigBestand = new string[2];
+
+        List<Encoding> karakterSet = new List<Encoding> { Encoding.Default, Encoding.UTF8, Encoding.GetEncoding("iso-8859-1") };
+        List<string> karakterSetNamen = new List<string> { "Default", "UTF-8", "ANSI" };
 
         public MainWindow()
         {
             InitializeComponent();
         }
 
+        void ToonMelding(string melding, bool isSucces = false)
+        {
+            tbkFeedback.Visibility = Visibility.Visible;
+            tbkFeedback.Text = melding;
+            tbkFeedback.Background = isSucces == true ?
+                new SolidColorBrush(Color.FromRgb(0, 200, 0)) :
+                new SolidColorBrush(Color.FromRgb(200, 0, 0));
+        }
+
+        void KoppelLijsten()
+        {
+            cmbEncoding.ItemsSource = karakterSetNamen;
+        }
+
         private void BtnLeesBestand_Click(object sender, RoutedEventArgs e)
         {
-            string pad = @"../../Assets/" + txtBestandsnaam.Text;
-            string tekst = readFileService.TextFile_To_String(pad, Encoding.GetEncoding("iso-8859-1"));
-            txtArtikelen.Text = tekst;
-            ToonFoutmelding();
+            try
+            {
+                string bestandsNaam = txtBestandsnaam.Text;
+                txtTekst.Text = "";
+
+                txtTekst.Text = readService.TextFileToString(bestandenMap, bestandsNaam);
+                ToonMelding($"Bestand {bestandsNaam} werd succesvol gelezen", true);
+            }
+            catch (Exception ex)
+            {
+                ToonMelding(ex.Message);
+            }
         }
 
         private void BtnKiesBestand_Click(object sender, RoutedEventArgs e)
         {
-            string pad = KiesBestand();
+            try
+            {
+                string[] gekozenBestand = readService.KiesBestand();
+                txtTekst.Text = "";
+
+                if (gekozenBestand != null)
+                {
+                    string bestandsInhoud = readService.TextFileToString(gekozenBestand[0], gekozenBestand[1]);
+
+                    txtTekst.Text = bestandsInhoud;
+                    txtBestandsnaam.Text = gekozenBestand[1];
+                    huidigBestand = new string[] { gekozenBestand[0], gekozenBestand[1] };
+                    ToonMelding($"Bestand {gekozenBestand[1]} werd succesvol gelezen", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                ToonMelding(ex.Message);
+            }
         }
 
         private void BtnSchrijfBestand_Click(object sender, RoutedEventArgs e)
         {
-            string pad = @"../../Assets/Artikelen.csv";
-            string bestandsNaam = txtBestandsnaam.Text;
-            string tekst = txtArtikelen.Text;
+            try
+            {
+                string tekst = txtTekst.Text;
 
+
+            }
+            catch (Exception ex)
+            {
+                ToonMelding(ex.Message);
+            }
         }
 
         private void btnSchrijfBestandMetKeuze_Click(object sender, RoutedEventArgs e)
         {
-            string[] opslagInfo = new string[2];
-            string pad = opslagInfo[0];
-            string bestandsNaam = opslagInfo[1];
-            string tekst = txtArtikelen.Text;
+            try
+            {
+                string tekst = txtTekst.Text;
+
+            }
+            catch (Exception ex)
+            {
+                ToonMelding(ex.Message);
+            }
 
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            string pad = @"../../Assets/Artikelen.csv";
-            string tekst = readFileService.TextFile_To_String(pad, Encoding.GetEncoding("iso-8859-1"));
-            txtArtikelen.Text = tekst;
-            txtBestandsnaam.Text = "personen.txt";
-            ToonFoutmelding();
+            KoppelLijsten();
+            try
+            {
+                tbkFeedback.Visibility = Visibility.Hidden;
+                txtTekst.Text = readService.TextFileToString(bestandenMap, "Le Maquis.txt");
+                huidigBestand = new string[] { bestandenMap, "Le Maquis.txt" };
+                txtBestandsnaam.Text = "Le Maquis ANSI.txt";
+
+            }
+            catch (Exception ex)
+            {
+                ToonMelding(ex.Message);
+            }
         }
-        
-        string KiesBestand(string filter = "Text documents (.txt)|*.txt|Comma seperated values (.csv)|*.csv")
-        {
-            string gekozenBestandsPad = "";
-            OpenFileDialog kiesBestand = new OpenFileDialog { Filter = filter};
-            bool? result = kiesBestand.ShowDialog();
-            Console.WriteLine("Result: " + result);
-            gekozenBestandsPad = kiesBestand.FileName;
-            Console.WriteLine("Bestandsnaam: " + gekozenBestandsPad);
-            return gekozenBestandsPad;
-        }
-
-        void ToonFoutmelding()
-        {
-            string foutmelding;
-            foutmelding = readFileService.Foutmelding;
-            tbkErrors.Visibility = Visibility.Hidden;
-            if (!string.IsNullOrEmpty(foutmelding)) tbkErrors.Visibility = Visibility.Visible;
-            tbkErrors.Text = foutmelding;
-
-        }
-
-        string[] GeefPadOmOpTeSlaan(string filter = "Text documents (.txt)|*.txt|Comma seperated values (.csv)|*.csv")
-        {
-            string[] bestandsInfo = new string[2];
-            string pad, bestandsNaam, folder;
-
-            return bestandsInfo;
-        }
-
-
-
     }
 }
